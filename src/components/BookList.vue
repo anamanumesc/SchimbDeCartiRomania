@@ -31,21 +31,37 @@ export default {
 
 <style scoped>
 .book-list {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+  padding: 20px;
 }
 
 .book-item {
-  width: 200px;
-  margin: 10px;
+  background: #fff;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .book-item img {
   width: 100%;
   height: auto;
   border-radius: 8px;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
 }
 </style>

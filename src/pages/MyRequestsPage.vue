@@ -3,7 +3,7 @@
     <h1>Pagina Cărții</h1>
 
     <div class="requests-container">
-      <!-- Prima jumătate: Cererile primite -->
+      <!-- Cererile primite -->
       <div class="received-requests">
         <h2>Cererile primite</h2>
         <ul>
@@ -14,7 +14,7 @@
         </ul>
       </div>
 
-      <!-- A doua jumătate: Cererile trimise -->
+      <!-- Cererile trimise -->
       <div class="sent-requests">
         <h2>Cererile trimise</h2>
         <ul>
@@ -24,18 +24,42 @@
         </ul>
       </div>
     </div>
+
+    <!-- Popup -->
+    <SeeRequestPopup
+      v-if="showPopup"
+      :request="selectedRequest"
+      @close="showPopup = false"
+    />
   </div>
 </template>
 
 <script>
+import SeeRequestPopup from '@/components/SeeRequestPopup.vue';
+
 export default {
-  name: 'BookPage',
+  name: 'MyRequestsPage',
+  components: { SeeRequestPopup },
   data() {
     return {
+      showPopup: false,
+      selectedRequest: null,
       receivedRequests: [
-        { bookTitle: 'Cartea A', requester: 'Ion Popescu' },
-        { bookTitle: 'Cartea B', requester: 'Maria Ionescu' },
-        { bookTitle: 'Cartea C', requester: 'George Vasilescu' },
+        {
+          bookTitle: 'Cartea A',
+          requester: 'Ion Popescu',
+          message: 'Salut! Mi-ar plăcea să facem schimb.',
+          offeredBooks: [
+            { id: 1, title: 'Cartea lui' },
+            { id: 2, title: 'Altă carte interesantă' },
+          ],
+        },
+        {
+          bookTitle: 'Cartea B',
+          requester: 'Maria Ionescu',
+          message: 'Sunt interesată de această carte!',
+          offeredBooks: [{ id: 3, title: 'Un roman captivant' }],
+        },
       ],
       sentRequests: [
         { bookTitle: 'Cartea X', status: 'approve' },
@@ -46,8 +70,8 @@ export default {
   },
   methods: {
     viewDetails(request) {
-      // Aici va veni logica pentru popup, deocamdată doar un log
-      console.log('Vezi detalii pentru cererea:', request);
+      this.selectedRequest = request;
+      this.showPopup = true;
     },
   },
 };
@@ -64,8 +88,9 @@ export default {
   margin-top: 20px;
 }
 
-.received-requests, .sent-requests {
-  width: 48%; /* Fiecare jumătate ocupă 48% din lățimea totală */
+.received-requests,
+.sent-requests {
+  width: 48%;
 }
 
 h2 {

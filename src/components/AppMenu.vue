@@ -3,8 +3,8 @@
     <ul class="menu-list">
       <li><router-link to="/"><i class="fas fa-home"></i> Acasă</router-link></li>
       <li><router-link to="/requests"><i class="fas fa-hand-paper"></i> Cereri</router-link></li>
-      <li><router-link to="/adauga"><i class="fas fa-plus-circle"></i> Adaugă carte</router-link></li>
-      <li><router-link to="/cont"><i class="fas fa-user"></i> Contul meu</router-link></li>
+      <li><router-link to="/add"><i class="fas fa-plus-circle"></i> Adaugă carte</router-link></li>
+      <li><router-link to="/account"><i class="fas fa-user"></i> Contul meu</router-link></li>
     </ul>
   </nav>
 </template>

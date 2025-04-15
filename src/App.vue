@@ -20,7 +20,7 @@ export default {
   computed: {
     // Verificăm dacă ruta curentă este login
     isLoginPage() {
-  const hiddenMenuRoutes = ['/', '/login', '/signup'];
+  const hiddenMenuRoutes = ['/login', '/signup', "/forgot-password"];
   return hiddenMenuRoutes.includes(this.$route.path);
 }
   }

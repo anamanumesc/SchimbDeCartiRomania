@@ -31,6 +31,10 @@
       <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
     </form>
     <p>Nu ai cont? <router-link to="/signup">Înregistrează-te aici</router-link></p>
+    <p>
+  <router-link to="/forgot-password">Ai uitat parola?</router-link>
+</p>
+
   </div>
 </template>
 
@@ -50,7 +54,7 @@ export default {
       if (this.email === 'user@example.com' && this.password === 'password123') {
         // Dacă autentificarea este validă
         alert('Autentificare reușită!');
-        this.$router.push('/home'); // Redirecționează utilizatorul la pagina de home
+        this.$router.push('/'); // Redirecționează utilizatorul la pagina de home
       } else {
         // Dacă datele nu sunt corecte
         this.errorMessage = 'Email sau parolă incorecte. Te rog încearcă din nou.';
