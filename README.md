@@ -9,12 +9,11 @@
 5. npm install -g @vue/cli
 6. npm install
 7. npm install axios
-
 8. npm run serve
 
+
+
 ## backend setup 
-
-
 1. cd backend (in alt terminal)
 2. npm install express cors mssql dotenv
 3. trebuie sa adaugi in baza de date adresa ta IP 
