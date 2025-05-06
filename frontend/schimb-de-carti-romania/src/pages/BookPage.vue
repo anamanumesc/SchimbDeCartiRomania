@@ -10,6 +10,16 @@
       <p><strong>Județ:</strong> {{ book.county || 'Oricare' }}</p>
       <p v-if="book.description"><strong>Descriere:</strong> {{ book.description }}</p>
 
+      <!-- Butonul de traducere -->
+      <button @click="translateDescription" class="translate-button">
+        Tradu descrierea în engleză
+      </button>
+
+      <!-- Afișăm descrierea tradusă dacă există -->
+      <p v-if="translatedDescription" class="translated">
+        <strong>Descriere tradusă:</strong> {{ translatedDescription }}
+      </p>
+
       <p>
         <strong>Propus de:</strong>
         <router-link :to="'/profile/' + book.userId" class="user-link">
@@ -28,32 +38,47 @@
 </template>
 
 <script>
-import { getBookDetails } from '@/services/api'; // importăm funcția
+import { getBookDetails } from '@/services/api';
+import axios from 'axios';
 
 export default {
   name: 'BookPage',
   data() {
-    return { 
-      book: null 
+    return {
+      book: null,
+      translatedDescription: ''
     };
   },
   created() {
-    const bookId = this.$route.params.id;  // Obținem ID-ul cărții din URL
-    this.fetchBookDetails(bookId);  // Apelăm funcția pentru a aduce detaliile cărții
+    const bookId = this.$route.params.id;
+    this.fetchBookDetails(bookId);
   },
   methods: {
-    // Funcție pentru a aduce detaliile unei cărți
     async fetchBookDetails(id) {
       try {
-        this.book = await getBookDetails(id);  // Așteptăm răspunsul de la API
+        this.book = await getBookDetails(id);
       } catch (error) {
         console.error('Error fetching book details:', error);
       }
     },
     proposeExchange() {
-      this.$router.push(`/book/${this.book.id}/propose`);  // Direcționăm la pagina de propunere schimb
+      this.$router.push(`/book/${this.book.id}/propose`);
     },
-  },
+    async translateDescription() {
+      if (!this.book?.description) return;
+
+      try {
+        const response = await axios.post('/api/translate', {
+          text: this.book.description,
+          to: 'en'
+        });
+        this.translatedDescription = response.data.translation;
+      } catch (err) {
+        console.error('Eroare la traducere:', err);
+        this.translatedDescription = 'Eroare la traducere.';
+      }
+    }
+  }
 };
 </script>
 
@@ -118,6 +143,28 @@ p {
 
 .exchange-button:hover {
   background-color: #e64a19;
+}
+
+.translate-button {
+  margin-top: 15px;
+  background-color: #4caf50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.translate-button:hover {
+  background-color: #388e3c;
+}
+
+.translated {
+  margin-top: 10px;
+  color: #333;
+  background: #eef9f0;
+  padding: 10px;
+  border-radius: 6px;
 }
 
 .not-found {

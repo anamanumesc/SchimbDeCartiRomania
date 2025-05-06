@@ -80,7 +80,7 @@ exports.login = async (req, res) => {
       token
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Login error:', eror);
     res.status(500).json({ error: 'Server error' });
   }
 };

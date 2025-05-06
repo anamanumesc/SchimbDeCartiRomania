@@ -4,6 +4,7 @@ const cors = require('cors');
 require('dotenv').config();
 const bookRoutes = require('./routes/books');
 const authRoutes = require('./routes/auth');
+const translatorRoutes = require('./routes/translator');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -25,6 +26,7 @@ console.log('AZURE_STORAGE_CONTAINER_NAME set:', Boolean(process.env.AZURE_STORA
 // Routes with API prefix
 app.use('/api/books', bookRoutes);  // Change this line
 app.use('/api/auth', authRoutes);   // Change this line
+app.use('/api', translatorRoutes);
 
 // Test route
 app.get('/test', (req, res) => {
