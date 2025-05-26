@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Configure base URL
-const API_URL = process.env.VUE_APP_API_URL || 'http://localhost:3000/api';
+const API_URL =  'http://localhost:3000/api';
 const AUTH_URL = `${API_URL}/auth`;
 // Create axios instance with authorization header handling
 const authClient = axios.create({

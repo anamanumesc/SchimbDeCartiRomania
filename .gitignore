@@ -43,3 +43,5 @@ Desktop.ini
 *.pem
 *.key
 *.cert
+/node_modules
+/frontend/schimb-de-carti-romania/node_modules
