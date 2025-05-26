@@ -30,4 +30,11 @@ router.post('/add', protect, bookController.addBook);
 // Get a specific book by ID - această rută trebuie să vină DUPĂ '/user'
 router.get('/:id', bookController.getBookById);
 
+router.get('/:id/history', bookController.getBookHistory);
+
+router.post('/:id/review', bookController.addReview);
+
+
+
+
 module.exports = router;

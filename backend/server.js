@@ -27,6 +27,8 @@ console.log('AZURE_STORAGE_CONTAINER_NAME set:', Boolean(process.env.AZURE_STORA
 app.use('/api/books', bookRoutes);  // Change this line
 app.use('/api/auth', authRoutes);   // Change this line
 app.use('/api', translatorRoutes);
+app.use('/api/books', require('./routes/books'));
+
 
 // Test route
 app.get('/test', (req, res) => {

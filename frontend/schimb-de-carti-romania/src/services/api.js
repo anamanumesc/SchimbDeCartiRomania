@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_URL = process.env.VUE_APP_API_URL || 'http://localhost:3000/api';
+const API_URL = process.env.VUE_APP_API_URL;
+
 
 const apiClient = axios.create({
   baseURL: API_URL,
@@ -105,6 +106,16 @@ export const getBooksByUser = async () => {
     throw error;
   }
 };
+export const getBookHistory = async (bookId) => {
+  try {
+    const response = await apiClient.get(`/books/${bookId}/history`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching history for book ${bookId}:`, error);
+    throw error;
+  }
+};
+
 
 export const deleteBookById = async (id) => {
   try {

@@ -364,3 +364,76 @@ exports.getUserBooks = async (req, res) => {
     res.status(500).json({ error: 'Error retrieving user books' });
   }
 };
+// Get history of a book
+exports.getBookHistory = async (req, res) => {
+  try {
+    const bookId = parseInt(req.params.id);
+    if (isNaN(bookId)) {
+      return res.status(400).json({ error: 'Invalid book ID' });
+    }
+
+    const history = await executeQuery(async (pool) => {
+      const result = await pool.request()
+        .input('bookId', mssql.Int, bookId)
+        .query(`
+          SELECT u.name AS username, h.startDate, h.endDate, h.review, h.rating
+          FROM BookHistory h
+          JOIN Users u ON u.id = h.userId
+          WHERE h.bookId = @bookId
+          ORDER BY h.startDate DESC
+        `);
+      return result.recordset;
+    });
+
+    res.json(history);
+  } catch (error) {
+    console.error('Error fetching book history:', error);
+    res.status(500).json({ error: 'Error fetching book history' });
+  }
+};
+exports.addReview = async (req, res) => {
+  const { userId, rating, review } = req.body;
+  const bookId = parseInt(req.params.id);
+
+  if (!userId || rating == null || !bookId) {
+    return res.status(400).json({ error: 'Date incomplete pentru recenzie.' });
+  }
+
+  try {
+    await executeQuery(async (pool) => {
+      const checkRequest = pool.request();
+      checkRequest.input('bookId', mssql.Int, bookId);
+      checkRequest.input('userId', mssql.Int, userId);
+
+      const existing = await checkRequest.query(
+        `SELECT * FROM BookHistory WHERE bookId = @bookId AND userId = @userId`
+      );
+
+      const request = pool.request();
+      request.input('bookId', mssql.Int, bookId);
+      request.input('userId', mssql.Int, userId);
+      request.input('rating', mssql.Int, rating);
+      request.input('review', mssql.NVarChar(1000), review);
+
+      if (existing.recordset.length === 0) {
+        await request.query(`
+          INSERT INTO BookHistory (bookId, userId, startDate, review, rating)
+          VALUES (@bookId, @userId, GETDATE(), @review, @rating);
+        `);
+      } else {
+        await request.query(`
+          UPDATE BookHistory
+          SET review = @review, rating = @rating
+          WHERE bookId = @bookId AND userId = @userId;
+        `);
+      }
+    });
+
+    res.status(200).json({ message: 'Recenzie salvată cu succes.' });
+  } catch (error) {
+    console.error('Eroare la salvarea recenziei:', error);
+    res.status(500).json({ error: 'Eroare la salvarea recenziei' });
+  }
+};
+
+
