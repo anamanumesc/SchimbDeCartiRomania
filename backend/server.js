@@ -5,6 +5,7 @@ require('dotenv').config();
 const bookRoutes = require('./routes/books');
 const authRoutes = require('./routes/auth');
 const translatorRoutes = require('./routes/translator');
+const exchangeRoutes = require('./routes/exchanges');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -28,6 +29,7 @@ app.use('/api/books', bookRoutes);  // Change this line
 app.use('/api/auth', authRoutes);   // Change this line
 app.use('/api', translatorRoutes);
 app.use('/api/books', require('./routes/books'));
+app.use('/api/exchanges', exchangeRoutes); //
 
 
 // Test route

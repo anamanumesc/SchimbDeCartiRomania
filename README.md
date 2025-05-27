@@ -9,7 +9,8 @@
 5. npm install -g @vue/cli
 6. npm install
 7. npm install axios
-8. npm run serve
+8. chmod +x node_modules/.bin/vue-cli-service
+9. npm run serve
 
 
 

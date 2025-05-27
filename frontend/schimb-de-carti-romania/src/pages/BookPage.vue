@@ -66,7 +66,7 @@
     </div>
 
     <div v-else class="not-found">
-      <p>Cartea nu a fost găsită.</p>
+      <p>Se incarca...</p>
     </div>
   </div>
 </template>

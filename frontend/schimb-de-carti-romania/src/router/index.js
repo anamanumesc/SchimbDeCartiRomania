@@ -11,25 +11,32 @@ import BookPage from '@/pages/BookPage.vue';
 import PublicProfilePage from '@/pages/PublicProfilePage.vue';
 import ProposeExchangePage from '@/pages/ProposeExchangePage.vue';
 import ResetPasswordPage from "@/pages/ResetPasswordPage.vue";
+//import ManageExchangesPage from '@/pages/ManageExchangesPage.vue'; // Adaugă această linie
 
 const routes = [
   { path: '/', component: HomePage },
   { path: '/login', component: LoginPage },
   { path: '/signup', component: SignUpPage },
   { path: '/forgot-password', component: ForgotPasswordPage },
-  { 
-    path: '/requests', 
-    component: MyRequestsPage,
+  {
+     path: '/requests',
+     component: MyRequestsPage,
     meta: { requiresAuth: true }
   },
-  { 
-    path: '/account', 
-    component: ContPage,
+  // Adaugă ruta pentru gestionarea schimburilor
+  {
+     path: '/exchanges',
+     component: MyRequestsPage,
     meta: { requiresAuth: true }
   },
-  { 
-    path: '/add', 
-    component: AdaugaCartePage,
+  {
+     path: '/account',
+     component: ContPage,
+    meta: { requiresAuth: true }
+  },
+  {
+     path: '/add',
+     component: AdaugaCartePage,
     meta: { requiresAuth: true }
   },
   {
@@ -39,9 +46,9 @@ const routes = [
   },
   { path: '/book/:id', component: BookPage },
   { path: '/profile/:id', component: PublicProfilePage },
-  { 
-    path: '/book/:id/propose', 
-    component: ProposeExchangePage,
+  {
+     path: '/book/:id/propose',
+     component: ProposeExchangePage,
     meta: { requiresAuth: true }
   }
 ];
