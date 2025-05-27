@@ -36,7 +36,7 @@
         </div>
         <div v-else-if="!loading" class="no-books">
           <p>Nu ai cărți adăugate în cont.</p>
-          <router-link to="/add-book" class="add-book-link">Adaugă o carte</router-link>
+          <router-link to="/add" class="add-book-link">Adaugă o carte</router-link>
         </div>
         <div v-if="loading" class="loading">Se încarcă cărțile tale...</div>
       </div>

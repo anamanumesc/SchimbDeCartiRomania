@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'; // Removed unused 'computed' import
+import { ref, onMounted } from 'vue'; 
 import { LMap, LTileLayer, LMarker, LPopup } from '@vue-leaflet/vue-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { getBooks } from '@/services/api';
@@ -40,6 +40,31 @@ Icon.Default.mergeOptions({
   iconUrl: require('leaflet/dist/images/marker-icon.png'),
   shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
 });
+
+// Funcție utilitară pentru normalizarea stringurilor
+const normalizeString = (str) => {
+  if (!str) return '';
+  return str.toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // elimină diacriticele
+    .replace(/[-_]/g, ' ')           // înlocuiește - și _ cu spațiu
+    .replace(/\s+/g, ' ')            // reduce spațiile multiple
+    .trim();                          // elimină spațiile de la început și sfârșit
+};
+
+// Funcție pentru a calcula similaritatea dintre două stringuri
+const calculateSimilarity = (s1, s2) => {
+  const normalized1 = normalizeString(s1);
+  const normalized2 = normalizeString(s2);
+  
+  // Dacă stringurile sunt identice după normalizare
+  if (normalized1 === normalized2) return 1;
+  
+  // Verifică dacă unul îl include pe celălalt
+  if (normalized1.includes(normalized2) || normalized2.includes(normalized1)) return 0.9;
+  
+  return 0;
+};
 
 export default {
   name: 'MapView',
@@ -57,10 +82,61 @@ export default {
     const url = ref('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
     const attribution = ref('&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>');
     const cityMarkers = ref([]);
+    const unmatchedCities = ref([]);
+
+    // Funcție îmbunătățită pentru potrivirea orașelor
+    const findCityCoordinates = (cityName, countyName) => {
+      // Normalizează numele orașului și județului
+      const normalizedCityName = normalizeString(cityName);
+      const normalizedCountyName = normalizeString(countyName);
+      
+      let bestMatch = null;
+      let bestScore = 0;
+      
+      for (const city of romanianCities) {
+        const normCityName = normalizeString(city.name);
+        const normCountyName = normalizeString(city.county);
+        
+        // Verifică potrivirea județului (trebuie să fie exactă)
+        if (normCountyName !== normalizedCountyName) continue;
+        
+        // Calculează similaritatea pentru numele orașului
+        const similarity = calculateSimilarity(normCityName, normalizedCityName);
+        
+        if (similarity > bestScore) {
+          bestScore = similarity;
+          bestMatch = city;
+          
+          // Dacă am găsit o potrivire perfectă, ne oprim
+          if (similarity === 1) break;
+        }
+      }
+      
+      // Considerăm potrivită o similaritate de cel puțin 0.7
+      if (bestScore >= 0.7) {
+        console.log(`Potrivire pentru "${cityName}, ${countyName}": ${bestMatch.name}, ${bestMatch.county} (scor: ${bestScore})`);
+        return [bestMatch.lat, bestMatch.lng];
+      }
+      
+      console.warn(`Nu s-a găsit potrivire pentru "${cityName}, ${countyName}" (cel mai bun scor: ${bestScore})`);
+      unmatchedCities.value.push({
+        city: cityName,
+        county: countyName,
+        bestMatchName: bestMatch?.name || 'N/A',
+        bestMatchScore: bestScore
+      });
+      
+      // Returnăm o poziție aproximativă bazată pe centrul României
+      return [
+        45.9443 + (Math.random() * 2 - 1), 
+        25.0094 + (Math.random() * 2 - 1)
+      ];
+    };
 
     // Group books by city and create markers
     const groupBooksByCity = () => {
       const cities = {};
+      unmatchedCities.value = [];
       
       books.value.forEach(book => {
         if (!book.city || !book.county) return;
@@ -68,18 +144,7 @@ export default {
         const cityKey = `${book.city}-${book.county}`;
         
         if (!cities[cityKey]) {
-          // Find coordinates for the city or use approximate ones
-          const cityInfo = romanianCities.find(
-            c => c.name.toLowerCase() === book.city.toLowerCase() && 
-                c.county.toLowerCase() === book.county.toLowerCase()
-          );
-          
-          const coordinates = cityInfo 
-            ? [cityInfo.lat, cityInfo.lng] 
-            : [
-                45.9443 + (Math.random() - 0.5), 
-                25.0094 + (Math.random() - 0.5)
-              ];
+          const coordinates = findCityCoordinates(book.city, book.county);
           
           cities[cityKey] = {
             city: book.city,
@@ -93,6 +158,11 @@ export default {
       });
       
       cityMarkers.value = Object.values(cities);
+      
+      // Log statistici
+      console.log(`Total cărți procesate: ${books.value.length}`);
+      console.log(`Total orașe marcate pe hartă: ${cityMarkers.value.length}`);
+      console.log(`Orașe negăsite: ${unmatchedCities.value.length}`);
     };
 
     // Fetch books and initialize map
@@ -118,7 +188,8 @@ export default {
       center,
       url,
       attribution,
-      cityMarkers
+      cityMarkers,
+      unmatchedCities
     };
   }
 };
