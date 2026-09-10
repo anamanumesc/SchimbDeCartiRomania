@@ -7,6 +7,7 @@ from app.core.database import engine, Base, get_db
 import app.models
 from app.api.auth import router as auth_router
 from app.api.books import router as books_router
+from app.api.exchanges import router as exchanges_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -18,6 +19,7 @@ app = FastAPI(
 
 app.include_router(auth_router)
 app.include_router(books_router)
+app.include_router(exchanges_router)
 
 @app.get("/health")
 def health_check(db: Session = Depends(get_db)):
