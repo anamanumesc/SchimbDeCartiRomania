@@ -23,7 +23,7 @@
       <div class="stats-grid">
         <div class="stat-box">
           <span class="stat-num" id="books-count">0</span>
-          <span class="stat-label">Cărți în Catalog</span>
+          <span class="stat-label">Cărți Găsite</span>
         </div>
         <div class="stat-box">
           <span class="stat-num" id="api-version">-</span>
@@ -67,9 +67,23 @@
         </form>
       </section>
 
-      <!-- Lista cărților -->
+      <!-- Bara de filtrare & căutare -->
       <section class="catalog-section">
-        <h2>Cărți disponibile</h2>
+        <div class="catalog-header">
+          <h2>Cărți disponibile</h2>
+          <button type="button" class="btn btn-text" id="clear-filters-btn">Resetează filtre</button>
+        </div>
+
+        <div class="filters-bar">
+          <div class="filter-input-wrap">
+            <input type="text" id="search-input" placeholder="🔍 Caută după titlu sau autor...">
+          </div>
+          <div class="filter-dropdowns">
+            <input type="text" id="filter-genre" placeholder="Filtru gen...">
+            <input type="text" id="filter-city" placeholder="Filtru oraș...">
+          </div>
+        </div>
+
         <div id="books-list" class="books-grid">
           <p class="empty-text">Se încarcă catalogul...</p>
         </div>

@@ -1,3 +1,5 @@
+let debounceTimer = null;
+
 async function loadHealth() {
   const badge = document.getElementById('connection-badge');
   const text = document.getElementById('connection-text');
@@ -20,13 +22,24 @@ async function loadBooks() {
   const list = document.getElementById('books-list');
   const count = document.getElementById('books-count');
 
+  const q = document.getElementById('search-input').value.trim();
+  const genre = document.getElementById('filter-genre').value.trim();
+  const city = document.getElementById('filter-city').value.trim();
+
+  const params = new URLSearchParams();
+  if (q) params.append('q', q);
+  if (genre) params.append('genre', genre);
+  if (city) params.append('city', city);
+
+  const url = `/api/books${params.toString() ? '?' + params.toString() : ''}`;
+
   try {
-    const res = await fetch('/api/books');
+    const res = await fetch(url);
     const books = await res.json();
     count.textContent = books.length;
 
     if (books.length === 0) {
-      list.innerHTML = '<p class="empty-text">Nicio carte înregistrată încă. Fii primul care adaugă una!</p>';
+      list.innerHTML = '<p class="empty-text">Nu s-a găsit nicio carte conform filtrelor.</p>';
       return;
     }
 
@@ -46,11 +59,27 @@ async function loadBooks() {
   }
 }
 
+function handleFilterInput() {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(loadBooks, 250);
+}
+
 function escapeHtml(str) {
   return String(str || '').replace(/[&<>'"]/g, tag => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
   }[tag] || tag));
 }
+
+document.getElementById('search-input').addEventListener('input', handleFilterInput);
+document.getElementById('filter-genre').addEventListener('input', handleFilterInput);
+document.getElementById('filter-city').addEventListener('input', handleFilterInput);
+
+document.getElementById('clear-filters-btn').addEventListener('click', () => {
+  document.getElementById('search-input').value = '';
+  document.getElementById('filter-genre').value = '';
+  document.getElementById('filter-city').value = '';
+  loadBooks();
+});
 
 document.getElementById('book-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -78,7 +107,7 @@ document.getElementById('book-form').addEventListener('submit', async (e) => {
     document.getElementById('book-form').reset();
     await loadBooks();
   } catch (err) {
-    alert('Nu s-a putut salva cartea. Verifică conexiunea.');
+    alert('Nu s-a putut salva cartea.');
   } finally {
     btn.disabled = false;
     btn.textContent = 'Adaugă în catalog';
