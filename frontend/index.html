@@ -18,12 +18,16 @@
 
     <main class="card">
       <h1>Catalog Comunitar de Cărți</h1>
-      <p class="subtitle">Schimbă cărți citite cu alte titluri oferite de pasionați din comunitate.</p>
+      <p class="subtitle">Platformă găzduită pe Raspberry Pi pentru schimburi de volume.</p>
 
       <div class="stats-grid">
         <div class="stat-box">
           <span class="stat-num" id="books-count">0</span>
-          <span class="stat-label">Cărți Găsite</span>
+          <span class="stat-label">Cărți Disponibile</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-num" id="exchanges-count">0</span>
+          <span class="stat-label">Cereri Schimb</span>
         </div>
         <div class="stat-box">
           <span class="stat-num" id="api-version">-</span>
@@ -31,31 +35,30 @@
         </div>
       </div>
 
-      <!-- Formular adăugare carte -->
       <section class="form-section">
         <h2>Adaugă o carte pentru schimb</h2>
         <form id="book-form">
           <div class="form-row">
             <div class="form-group">
               <label for="title">Titlu carte *</label>
-              <input type="text" id="title" required placeholder="ex. Dune">
+              <input type="text" id="title" required placeholder="ex. Solaris">
             </div>
             <div class="form-group">
               <label for="author">Autor *</label>
-              <input type="text" id="author" required placeholder="ex. Frank Herbert">
+              <input type="text" id="author" required placeholder="ex. Stanislaw Lem">
             </div>
           </div>
           <div class="form-row">
             <div class="form-group">
               <label for="genre">Gen literar</label>
-              <input type="text" id="genre" placeholder="ex. SF / Ficțiune">
+              <input type="text" id="genre" placeholder="ex. SF">
             </div>
             <div class="form-group">
               <label for="condition">Stare carte</label>
               <select id="condition">
-                <option value="Nouă">Nouă / Impecabilă</option>
-                <option value="Bună" selected>Bună (ușoare urme de citire)</option>
-                <option value="Uzată">Uzată / Acceptabilă</option>
+                <option value="Nouă">Nouă</option>
+                <option value="Bună" selected>Bună</option>
+                <option value="Uzată">Uzată</option>
               </select>
             </div>
             <div class="form-group">
@@ -67,10 +70,9 @@
         </form>
       </section>
 
-      <!-- Bara de filtrare & căutare -->
       <section class="catalog-section">
         <div class="catalog-header">
-          <h2>Cărți disponibile</h2>
+          <h2>Catalog Disponibil</h2>
           <button type="button" class="btn btn-text" id="clear-filters-btn">Resetează filtre</button>
         </div>
 
@@ -89,10 +91,43 @@
         </div>
       </section>
 
+      <section class="catalog-section">
+        <h2>Cereri de Schimb în Curs</h2>
+        <div id="exchanges-list" class="exchanges-container">
+          <p class="empty-text">Nu există cereri de schimb active.</p>
+        </div>
+      </section>
+
       <div class="actions">
         <a href="/docs" target="_blank" class="btn btn-secondary">Documentație API (Swagger)</a>
       </div>
     </main>
+  </div>
+
+  <div id="exchange-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h3>Propune Schimb</h3>
+      <p class="modal-desc" id="modal-target-title">Cartea dorită: -</p>
+      <form id="exchange-form">
+        <input type="hidden" id="modal-target-id">
+        <div class="form-group">
+          <label for="modal-offered-select">Cartea pe care o oferi la schimb *</label>
+          <select id="modal-offered-select" required></select>
+        </div>
+        <div class="form-group">
+          <label for="modal-contact">Date de contact (Telefon / Email) *</label>
+          <input type="text" id="modal-contact" required placeholder="ex. 07xxxxxxxx sau email@exemplu.ro">
+        </div>
+        <div class="form-group">
+          <label for="modal-notes">Mesaj opțional</label>
+          <input type="text" id="modal-notes" placeholder="ex. Predare personală în Copou.">
+        </div>
+        <div class="modal-buttons">
+          <button type="button" class="btn btn-secondary" id="modal-cancel-btn">Anulează</button>
+          <button type="submit" class="btn btn-primary" id="modal-submit-btn">Trimite Cererea</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <script src="/app.js"></script>
