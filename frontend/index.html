@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schimb de Cărți România</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="logo">📚 Schimb de Cărți</div>
+      <div id="connection-badge" class="badge checking">
+        <span class="dot"></span>
+        <span id="connection-text">Verificare conexiune...</span>
+      </div>
+    </header>
+
+    <main class="card">
+      <h1>Comunitatea Ta de Lectură</h1>
+      <p class="subtitle">Platformă peer-to-peer pentru pasionații de cărți din România. Schimbă volume rapid și gratuit.</p>
+      
+      <div class="stats-grid">
+        <div class="stat-box">
+          <span class="stat-num" id="api-version">-</span>
+          <span class="stat-label">Versiune API</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-num" id="db-status">-</span>
+          <span class="stat-label">Bază de date</span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a href="/docs" target="_blank" class="btn btn-secondary">Documentație API (Swagger)</a>
+      </div>
+    </main>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
