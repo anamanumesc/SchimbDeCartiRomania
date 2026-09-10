@@ -1,4 +1,12 @@
 services:
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: bookexchange_tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate --url http://nginx:80
+    depends_on:
+      - nginx
+
   nginx:
     image: nginx:alpine
     container_name: bookexchange_proxy
