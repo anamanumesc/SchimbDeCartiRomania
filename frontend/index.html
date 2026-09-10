@@ -17,19 +17,63 @@
     </header>
 
     <main class="card">
-      <h1>Comunitatea Ta de Lectură</h1>
-      <p class="subtitle">Platformă peer-to-peer pentru pasionații de cărți din România. Schimbă volume rapid și gratuit.</p>
-      
+      <h1>Catalog Comunitar de Cărți</h1>
+      <p class="subtitle">Schimbă cărți citite cu alte titluri oferite de pasionați din comunitate.</p>
+
       <div class="stats-grid">
+        <div class="stat-box">
+          <span class="stat-num" id="books-count">0</span>
+          <span class="stat-label">Cărți în Catalog</span>
+        </div>
         <div class="stat-box">
           <span class="stat-num" id="api-version">-</span>
           <span class="stat-label">Versiune API</span>
         </div>
-        <div class="stat-box">
-          <span class="stat-num" id="db-status">-</span>
-          <span class="stat-label">Bază de date</span>
-        </div>
       </div>
+
+      <!-- Formular adăugare carte -->
+      <section class="form-section">
+        <h2>Adaugă o carte pentru schimb</h2>
+        <form id="book-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="title">Titlu carte *</label>
+              <input type="text" id="title" required placeholder="ex. Dune">
+            </div>
+            <div class="form-group">
+              <label for="author">Autor *</label>
+              <input type="text" id="author" required placeholder="ex. Frank Herbert">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="genre">Gen literar</label>
+              <input type="text" id="genre" placeholder="ex. SF / Ficțiune">
+            </div>
+            <div class="form-group">
+              <label for="condition">Stare carte</label>
+              <select id="condition">
+                <option value="Nouă">Nouă / Impecabilă</option>
+                <option value="Bună" selected>Bună (ușoare urme de citire)</option>
+                <option value="Uzată">Uzată / Acceptabilă</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="city">Oraș</label>
+              <input type="text" id="city" placeholder="ex. Iași">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" id="submit-btn">Adaugă în catalog</button>
+        </form>
+      </section>
+
+      <!-- Lista cărților -->
+      <section class="catalog-section">
+        <h2>Cărți disponibile</h2>
+        <div id="books-list" class="books-grid">
+          <p class="empty-text">Se încarcă catalogul...</p>
+        </div>
+      </section>
 
       <div class="actions">
         <a href="/docs" target="_blank" class="btn btn-secondary">Documentație API (Swagger)</a>
