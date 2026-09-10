@@ -1,4 +1,31 @@
 services:
+  nginx:
+    image: nginx:alpine
+    container_name: bookexchange_proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: bookexchange_backend
+    restart: unless-stopped
+    expose:
+      - "8000"
+    environment:
+      - DATABASE_URL=postgresql://bookuser:bookpassword_localdev@db:5432/bookexchange_db
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+
   db:
     image: postgres:16-alpine
     container_name: bookexchange_db
@@ -7,8 +34,8 @@ services:
       POSTGRES_USER: bookuser
       POSTGRES_PASSWORD: bookpassword_localdev
       POSTGRES_DB: bookexchange_db
-    ports:
-      - "5432:5432"
+    expose:
+      - "5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -16,22 +43,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: bookexchange_backend
-    restart: unless-stopped
-    ports:
-      - "8000:8000"
-    environment:
-      - DATABASE_URL=postgresql://bookuser:bookpassword_localdev@db:5432/bookexchange_db
-    volumes:
-      - ./backend:/app
-    depends_on:
-      db:
-        condition: service_healthy
 
 volumes:
   postgres_data:
