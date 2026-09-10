@@ -1,15 +1,22 @@
+import os
+# setam sqlite in-memory inainte de orice import din app
+os.environ["DATABASE_URL"] = "sqlite:///:memory:"
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
-from app.main import app
 from app.core.database import Base, get_db
+from app.main import app
 
-# folosim sqlite in-memory pentru testele automate rapide
-TEST_DB_URL = "sqlite:///:memory:"
-engine = create_engine(TEST_DB_URL, connect_args={"check_same_thread": False})
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+test_engine = create_engine(
+    "sqlite:///:memory:",
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+)
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
 
 def override_get_db():
     db = TestingSessionLocal()
@@ -22,9 +29,9 @@ app.dependency_overrides[get_db] = override_get_db
 
 @pytest.fixture(autouse=True)
 def setup_db():
-    Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=test_engine)
     yield
-    Base.metadata.drop_all(bind=engine)
+    Base.metadata.drop_all(bind=test_engine)
 
 client = TestClient(app)
 
@@ -34,7 +41,7 @@ def test_health_check():
     assert res.json()["status"] == "healthy"
 
 def test_auth_and_book_flow():
-    # register user
+    # register
     reg = client.post("/api/auth/register", json={
         "email": "dev@test.ro",
         "password": "Password123",
@@ -51,7 +58,7 @@ def test_auth_and_book_flow():
     assert login.status_code == 200
     token = login.json()["access_token"]
 
-    # add book
+    # create book
     book = client.post("/api/books", headers={"Authorization": f"Bearer {token}"}, json={
         "title": "Clean Code",
         "author": "Robert C. Martin",
