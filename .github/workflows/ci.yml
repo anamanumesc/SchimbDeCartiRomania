@@ -79,5 +79,14 @@ jobs:
           cd ~/SchimbDeCartiRomania
           git pull origin main
           docker compose up -d --build
-          sleep 6
-          curl -f http://localhost/health || exit 1
+          echo "Waiting for service to become healthy..."
+          for i in {1..12}; do
+            if curl -sf http://localhost/health > /dev/null; then
+              echo "Healthcheck passed!"
+              exit 0
+            fi
+            echo "Attempt $i/12 failed, waiting 3s..."
+            sleep 3
+          done
+          echo "Deployment failed healthcheck after 36 seconds."
+          exit 1

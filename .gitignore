@@ -40,3 +40,4 @@ dist/
 *.swp
 *.swo
 backups/
+job.log
