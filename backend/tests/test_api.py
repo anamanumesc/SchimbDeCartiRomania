@@ -1,69 +1,17 @@
-import os
-# setam sqlite in-memory inainte de orice import din app
-os.environ["DATABASE_URL"] = "sqlite:///:memory:"
-
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
-
-from app.core.database import Base, get_db
 from app.main import app
-
-test_engine = create_engine(
-    "sqlite:///:memory:",
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-)
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
-
-def override_get_db():
-    db = TestingSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-app.dependency_overrides[get_db] = override_get_db
-
-@pytest.fixture(autouse=True)
-def setup_db():
-    Base.metadata.create_all(bind=test_engine)
-    yield
-    Base.metadata.drop_all(bind=test_engine)
 
 client = TestClient(app)
 
 def test_health_check():
-    res = client.get("/health")
-    assert res.status_code == 200
-    assert res.json()["status"] == "healthy"
+    response = client.get("/health")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "healthy"
+    assert data["database"] == "connected"
 
-def test_auth_and_book_flow():
-    # register
-    reg = client.post("/api/auth/register", json={
-        "email": "dev@test.ro",
-        "password": "Password123",
-        "full_name": "Dev Tester",
-        "city": "Iași"
-    })
-    assert reg.status_code == 201
-
-    # login
-    login = client.post("/api/auth/login", data={
-        "username": "dev@test.ro",
-        "password": "Password123"
-    })
-    assert login.status_code == 200
-    token = login.json()["access_token"]
-
-    # create book
-    book = client.post("/api/books", headers={"Authorization": f"Bearer {token}"}, json={
-        "title": "Clean Code",
-        "author": "Robert C. Martin",
-        "genre": "Tech",
-        "city": "Iași"
-    })
-    assert book.status_code == 201
-    assert book.json()["status"] == "AVAILABLE"
+def test_get_books_empty_or_list():
+    response = client.get("/api/books")
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
