@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
 
 jobs:
   test:
@@ -30,29 +30,28 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.12
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
-          cache: "pip"
+          python-version: '3.12'
+          cache: 'pip'
 
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
+          pip install pytest httpx
 
       - name: Run Pytest
         env:
           DATABASE_URL: postgresql://bookuser:bookpass@localhost:5432/bookexchange_db
         run: |
-          cd backend
-          PYTHONPATH=. pytest -v
+          pytest -v backend/tests/test_api.py
 
-  docker-build:
+  build:
     name: Build Docker Images
-    runs-on: ubuntu-latest
     needs: test
-
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -60,33 +59,85 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Backend Image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./backend
-          push: false
-          tags: bookexchange-backend:test
+      - name: Test Docker Compose Build
+        run: |
+          docker compose build
 
   deploy:
     name: Deploy to Raspberry Pi
+    needs: [test, build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: self-hosted
-    needs: [test, docker-build]
-    if: github.ref == 'refs/heads/main'
 
     steps:
-      - name: Deploy & Restart Containers
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Pull Latest Code
         run: |
-          cd ~/SchimbDeCartiRomania
           git pull origin main
+
+      - name: Build and Start Containers
+        run: |
           docker compose up -d --build
-          echo "Waiting for service to become healthy..."
-          for i in {1..12}; do
-            if curl -sf http://localhost/health > /dev/null; then
-              echo "Healthcheck passed!"
+
+      - name: Resilient Healthcheck Loop
+        run: |
+          echo "Waiting for services to become healthy..."
+          for i in $(seq 1 12); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/health || true)
+            if [ "$STATUS" = "200" ]; then
+              echo "Healthcheck passed (HTTP 200 OK) on attempt $i."
               exit 0
             fi
-            echo "Attempt $i/12 failed, waiting 3s..."
+            echo "Attempt $i: Endpoint returned HTTP$STATUS. Retrying in 3s..."
             sleep 3
           done
-          echo "Deployment failed healthcheck after 36 seconds."
+          echo "Deployment failed healthcheck loop."
+          docker compose ps
+          docker logs bookexchange_backend --tail 50
           exit 1
+
+      - name: Prune Dangling Docker Images
+        if: always()
+        run: |
+          echo "Cleaning up dangling images..."
+          docker image prune -f
+
+      - name: Notify Deployment Status to Discord
+        if: always()
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK" ]; then
+            echo "DISCORD_WEBHOOK_URL is not set, skipping notification."
+            exit 0
+          fi
+
+          COMMIT_MSG=$(git log -1 --pretty=%B | head -n 1)
+          COMMIT_AUTHOR=$(git log -1 --pretty=%an)
+          COMMIT_SHA=$(git rev-parse --short HEAD)
+
+          if [ "${{ job.status }}" = "success" ]; then
+            COLOR=3066993
+            STATUS_TEXT="✅ Deployment Successful"
+          else
+            COLOR=15158332
+            STATUS_TEXT="❌ Deployment Failed"
+          fi
+
+          PAYLOAD=$(cat <<JSON_EOF
+          {
+            "embeds": [
+              {
+                "title": "${STATUS_TEXT}",
+                "description": "**Repo:** \`${{ github.repository }}\`\\n**Branch:** \`${{ github.ref_name }}\`\\n**Commit:** \`${COMMIT_SHA}\` - ${COMMIT_MSG}\\n**Author:** ${COMMIT_AUTHOR}\\n**Host:** Raspberry Pi 4 (Production)",
+                "color": ${COLOR},
+                "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+              }
+            ]
+          }
+JSON_EOF
+          )
+
+          curl -H "Content-Type: application/json" -X POST -d "$PAYLOAD" "$DISCORD_WEBHOOK"
