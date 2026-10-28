@@ -3,133 +3,500 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Schimb de Cărți România</title>
-  <link rel="stylesheet" href="/style.css">
+  <title>SchimbDeCărți.ro — Schimbă cărți online</title>
+
+  <!-- Bootstrap 3.3.7 CSS -->
+  <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css">
+
+  <style>
+    body {
+      background-color: #f4f4f4;
+      font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+      color: #333;
+      padding-bottom: 50px;
+    }
+
+    .navbar-custom {
+      background-color: #ffffff;
+      border-bottom: 1px solid #e7e7e7;
+      margin-bottom: 20px;
+    }
+
+    .navbar-brand-text {
+      font-size: 19px;
+      font-weight: bold;
+      color: #333 !important;
+      line-height: 50px;
+      padding: 0 15px;
+      display: inline-block;
+      text-decoration: none;
+    }
+
+    .navbar-brand-text span {
+      color: #337ab7;
+    }
+
+    .filter-box {
+      background-color: #fff;
+      border: 1px solid #dcdcdc;
+      border-radius: 4px;
+      padding: 12px 15px;
+      margin-bottom: 20px;
+    }
+
+    /* Grid de cărți - stil magazin online 2017 */
+    .book-item-col {
+      margin-bottom: 20px;
+    }
+
+    .book-thumbnail-card {
+      background: #ffffff;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      padding: 10px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .book-thumbnail-card:hover {
+      border-color: #337ab7;
+    }
+
+    .book-user-header {
+      font-size: 11px;
+      color: #777;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 5px;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+
+    .book-user-header:hover {
+      color: #337ab7;
+      text-decoration: underline;
+    }
+
+    .book-cover-frame {
+      height: 220px;
+      background-color: #f9f9f9;
+      border: 1px solid #eee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+
+    .book-cover-frame img {
+      max-height: 100%;
+      max-width: 100%;
+      object-fit: cover;
+    }
+
+    .book-cover-fallback {
+      color: #999;
+      font-size: 12px;
+      text-align: center;
+      padding: 10px;
+    }
+
+    .book-title-link {
+      font-size: 14px;
+      font-weight: bold;
+      color: #337ab7;
+      cursor: pointer;
+      margin-bottom: 3px;
+      line-height: 1.3;
+      height: 36px;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .book-title-link:hover {
+      text-decoration: underline;
+    }
+
+    .book-author-name {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 6px;
+    }
+
+    .book-meta-footer {
+      font-size: 11px;
+      color: #888;
+      border-top: 1px dotted #eee;
+      padding-top: 6px;
+      margin-top: auto;
+    }
+
+    /* Modale fără framework greoi */
+    .custom-backdrop {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: 15px;
+    }
+
+    .custom-backdrop.active {
+      display: flex;
+    }
+
+    .custom-dialog {
+      background: #fff;
+      border-radius: 4px;
+      border: 1px solid #999;
+      width: 100%;
+      max-width: 520px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,.25);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .view-container {
+      display: none;
+    }
+
+    .view-container.active {
+      display: block;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <header class="header">
-      <div class="logo">📚 Schimb de Cărți</div>
-      <div id="connection-badge" class="badge checking">
-        <span class="dot"></span>
-        <span id="connection-text">Verificare conexiune...</span>
+
+  <!-- HEADER -->
+  <div class="navbar-custom">
+    <div class="container">
+      <div class="row" style="display: flex; align-items: center; flex-wrap: wrap;">
+        <div class="col-sm-3 col-xs-12">
+          <a href="javascript:void(0)" onclick="switchView('catalog')" class="navbar-brand-text">
+            📚 SchimbDe<span>Cărți</span>
+          </a>
+        </div>
+        <div class="col-sm-5 col-xs-12">
+          <input type="text" id="searchInput" class="form-control input-sm" placeholder="Caută după titlu sau autor..." oninput="handleSearch()">
+        </div>
+        <div class="col-sm-4 col-xs-12 text-right" style="padding-top: 5px;">
+          <button class="btn btn-default btn-xs" onclick="toggleLanguage()" id="langBtn">
+            <span id="langFlag">🇬🇧</span> <strong id="langText">EN</strong>
+          </button>
+
+          <span id="guestNav">
+            <button class="btn btn-default btn-sm" onclick="openModal('loginModal')" data-i18n="login">Autentificare</button>
+            <button class="btn btn-primary btn-sm" onclick="openModal('registerModal')" data-i18n="register">Cont nou</button>
+          </span>
+
+          <span id="userNav" class="hidden">
+            <button class="btn btn-success btn-sm" onclick="openModal('addBookModal')" data-i18n="addBook">+ Pune carte</button>
+            <button class="btn btn-default btn-sm" onclick="switchView('requests')">
+              <span data-i18n="trades">Cereri</span> <span id="tradeBadge" class="badge hidden" style="background:#d9534f;">0</span>
+            </button>
+            <button class="btn btn-default btn-sm" onclick="openMyShelf()" data-i18n="myShelf">Raftul meu</button>
+            <button class="btn btn-default btn-sm" onclick="logout()">Ieșire</button>
+          </span>
+        </div>
       </div>
-    </header>
-
-    <main class="card">
-      <h1>Catalog Comunitar de Cărți</h1>
-      <p class="subtitle">Platformă găzduită pe Raspberry Pi pentru schimburi de volume.</p>
-
-      <div class="stats-grid">
-        <div class="stat-box">
-          <span class="stat-num" id="books-count">0</span>
-          <span class="stat-label">Cărți Disponibile</span>
-        </div>
-        <div class="stat-box">
-          <span class="stat-num" id="exchanges-count">0</span>
-          <span class="stat-label">Cereri Schimb</span>
-        </div>
-        <div class="stat-box">
-          <span class="stat-num" id="api-version">-</span>
-          <span class="stat-label">Versiune API</span>
-        </div>
-      </div>
-
-      <section class="form-section">
-        <h2>Adaugă o carte pentru schimb</h2>
-        <form id="book-form">
-          <div class="form-row">
-            <div class="form-group">
-              <label for="title">Titlu carte *</label>
-              <input type="text" id="title" required placeholder="ex. Solaris">
-            </div>
-            <div class="form-group">
-              <label for="author">Autor *</label>
-              <input type="text" id="author" required placeholder="ex. Stanislaw Lem">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="genre">Gen literar</label>
-              <input type="text" id="genre" placeholder="ex. SF">
-            </div>
-            <div class="form-group">
-              <label for="condition">Stare carte</label>
-              <select id="condition">
-                <option value="Nouă">Nouă</option>
-                <option value="Bună" selected>Bună</option>
-                <option value="Uzată">Uzată</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="city">Oraș</label>
-              <input type="text" id="city" placeholder="ex. Iași">
-            </div>
-          </div>
-          <button type="submit" class="btn btn-primary" id="submit-btn">Adaugă în catalog</button>
-        </form>
-      </section>
-
-      <section class="catalog-section">
-        <div class="catalog-header">
-          <h2>Catalog Disponibil</h2>
-          <button type="button" class="btn btn-text" id="clear-filters-btn">Resetează filtre</button>
-        </div>
-
-        <div class="filters-bar">
-          <div class="filter-input-wrap">
-            <input type="text" id="search-input" placeholder="🔍 Caută după titlu sau autor...">
-          </div>
-          <div class="filter-dropdowns">
-            <input type="text" id="filter-genre" placeholder="Filtru gen...">
-            <input type="text" id="filter-city" placeholder="Filtru oraș...">
-          </div>
-        </div>
-
-        <div id="books-list" class="books-grid">
-          <p class="empty-text">Se încarcă catalogul...</p>
-        </div>
-      </section>
-
-      <section class="catalog-section">
-        <h2>Cereri de Schimb în Curs</h2>
-        <div id="exchanges-list" class="exchanges-container">
-          <p class="empty-text">Nu există cereri de schimb active.</p>
-        </div>
-      </section>
-
-      <div class="actions">
-        <a href="/docs" target="_blank" class="btn btn-secondary">Documentație API (Swagger)</a>
-      </div>
-    </main>
+    </div>
   </div>
 
-  <div id="exchange-modal" class="modal-overlay hidden">
-    <div class="modal-card">
-      <h3>Propune Schimb</h3>
-      <p class="modal-desc" id="modal-target-title">Cartea dorită: -</p>
-      <form id="exchange-form">
-        <input type="hidden" id="modal-target-id">
+  <div class="container">
+
+    <!-- BARA DE FILTRARE -->
+    <div class="filter-box">
+      <div class="row">
+        <div class="col-sm-3 col-xs-6">
+          <label style="font-size:12px;" data-i18n="city">Oraș:</label>
+          <select id="fCity" class="form-control input-sm" onchange="applyFilters()">
+            <option value="all" data-i18n="allCities">Toate orașele</option>
+            <option value="Iași">Iași</option>
+            <option value="București">București</option>
+            <option value="Cluj-Napoca">Cluj-Napoca</option>
+            <option value="Timișoara">Timișoara</option>
+            <option value="Bacău">Bacău</option>
+            <option value="Brașov">Brașov</option>
+          </select>
+        </div>
+        <div class="col-sm-3 col-xs-6">
+          <label style="font-size:12px;" data-i18n="genre">Gen:</label>
+          <select id="fGenre" class="form-control input-sm" onchange="applyFilters()">
+            <option value="all" data-i18n="allGenres">Toate genurile</option>
+            <option value="Ficțiune">Ficțiune</option>
+            <option value="SF & Fantasy">SF & Fantasy</option>
+            <option value="Dezvoltare Personală">Dezvoltare Personală</option>
+            <option value="Istorie & Biografie">Istorie & Biografie</option>
+            <option value="Thriller & Mister">Thriller & Mister</option>
+            <option value="Tehnic & Știință">Tehnic & Știință</option>
+          </select>
+        </div>
+        <div class="col-sm-3 col-xs-6">
+          <label style="font-size:12px;" data-i18n="condition">Stare:</label>
+          <select id="fCond" class="form-control input-sm" onchange="applyFilters()">
+            <option value="all" data-i18n="allCond">Oricare</option>
+            <option value="Nouă">Nouă</option>
+            <option value="Ca nouă">Ca nouă</option>
+            <option value="Foarte bună">Foarte bună</option>
+            <option value="Bună">Bună</option>
+            <option value="Uzată">Uzată</option>
+          </select>
+        </div>
+        <div class="col-sm-2 col-xs-4">
+          <label style="font-size:12px;" data-i18n="format">Format:</label>
+          <select id="fSeries" class="form-control input-sm" onchange="applyFilters()">
+            <option value="all" data-i18n="allFormats">Toate</option>
+            <option value="series" data-i18n="seriesOnly">Pachet / Serie</option>
+            <option value="single" data-i18n="singlesOnly">Volum unic</option>
+          </select>
+        </div>
+        <div class="col-sm-1 col-xs-2 text-right" style="padding-top: 24px;">
+          <button class="btn btn-default btn-sm btn-block" onclick="resetFilters()" data-i18n="reset">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 1: CATALOG -->
+    <div id="catalogView" class="view-container active">
+      <div style="border-bottom: 2px solid #337ab7; padding-bottom: 5px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: flex-end;">
+        <h4 style="margin: 0; font-weight: bold;" data-i18n="catalogHeader">Cărți disponibile pentru schimb</h4>
+        <span id="countLabel" class="text-muted" style="font-size: 12px;">0 cărți</span>
+      </div>
+      <div id="booksGrid" class="row"></div>
+    </div>
+
+    <!-- VIEW 2: PROFIL UTILIZATOR -->
+    <div id="profileView" class="view-container">
+      <div class="well well-sm">
+        <div class="row">
+          <div class="col-sm-8">
+            <h3 id="profUser" style="margin-top: 5px; font-weight: bold;">Utilizator</h3>
+            <p class="text-muted" style="margin-bottom: 0;">
+              <span id="profLocation">📍 Iași</span> •
+              <span id="profBooks">0 cărți</span> •
+              <span id="profYear">Membru din 2026</span>
+            </p>
+          </div>
+          <div class="col-sm-4 text-right" style="padding-top: 10px;">
+            <button class="btn btn-default btn-sm" onclick="switchView('catalog')" data-i18n="backToCatalog">← Înapoi la catalog</button>
+          </div>
+        </div>
+      </div>
+      <h4 style="font-weight: bold; margin-bottom: 15px;" data-i18n="shelfTitle">Cărțile de pe raftul utilizatorului:</h4>
+      <div id="profileGrid" class="row"></div>
+    </div>
+
+    <!-- VIEW 3: CERERI SCHIMB -->
+    <div id="requestsView" class="view-container">
+      <div style="border-bottom: 1px solid #ddd; padding-bottom: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+        <h4 style="margin: 0; font-weight: bold;" data-i18n="tradesTitle">Panou Cereri de Schimb</h4>
+        <div>
+          <button class="btn btn-primary btn-sm" id="btnIn" onclick="switchTradeTab('incoming')" data-i18n="tabIn">Primite</button>
+          <button class="btn btn-default btn-sm" id="btnOut" onclick="switchTradeTab('outgoing')" data-i18n="tabOut">Trimise</button>
+        </div>
+      </div>
+      <div id="requestsList"></div>
+    </div>
+
+  </div>
+
+  <!-- MODAL DETALII CARTE -->
+  <div id="bookModal" class="custom-backdrop">
+    <div class="custom-dialog" style="max-width: 580px;">
+      <div style="border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between;">
+        <h4 id="mdTitle" style="margin: 0; font-weight: bold;">Titlu Carte</h4>
+        <button type="button" class="close" onclick="closeModal('bookModal')">&times;</button>
+      </div>
+      <div class="row">
+        <div class="col-xs-4">
+          <img id="mdCover" src="" class="img-thumbnail" style="width: 100%;" alt="Copertă">
+        </div>
+        <div class="col-xs-8">
+          <p><strong>Autor:</strong> <span id="mdAuthor"></span></p>
+          <p><strong>Gen:</strong> <span id="mdGenre"></span></p>
+          <p><strong>Stare:</strong> <span id="mdCond" class="label label-info"></span></p>
+          <p><strong>Format:</strong> <span id="mdFormat"></span></p>
+          <p><strong>Oraș:</strong> <span id="mdCity"></span></p>
+          <p><strong>Proprietar:</strong> <a href="javascript:void(0)" id="mdOwnerLink" style="font-weight: bold;"></a></p>
+        </div>
+      </div>
+      <div style="border-top: 1px solid #eee; margin-top: 12px; padding-top: 10px;">
+        <strong>Descriere:</strong>
+        <p id="mdDesc" style="font-size: 13px; color: #555; margin-top: 4px;"></p>
+      </div>
+      <div class="text-right" style="margin-top: 15px;">
+        <button class="btn btn-default" onclick="closeModal('bookModal')" data-i18n="close">Închide</button>
+        <button class="btn btn-primary" id="mdProposeBtn" onclick="triggerProposeFromModal()" data-i18n="propose">Propune schimb</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PROPUNE SCHIMB -->
+  <div id="proposeModal" class="custom-backdrop">
+    <div class="custom-dialog">
+      <div style="border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between;">
+        <h4 style="margin: 0; font-weight: bold;" data-i18n="proposeHeader">Propune un schimb</h4>
+        <button type="button" class="close" onclick="closeModal('proposeModal')">&times;</button>
+      </div>
+      <p id="propTarget" style="font-size: 13px; margin-bottom: 10px;"></p>
+      <label style="font-size: 12px;" data-i18n="chooseBooks">Bifează ce cărți oferi la schimb:</label>
+      <div id="myBooksChecklist" style="border: 1px solid #ccc; padding: 10px; max-height: 160px; overflow-y: auto; background: #fafafa; border-radius: 3px; margin-bottom: 12px;"></div>
+      <div class="form-group">
+        <label data-i18n="messageOpt">Mesaj opțional:</label>
+        <textarea id="propNotes" rows="2" class="form-control input-sm" placeholder="Ex: Cărțile sunt ca noi, predau în Iași..."></textarea>
+      </div>
+      <div class="text-right">
+        <button class="btn btn-default" onclick="closeModal('proposeModal')" data-i18n="cancel">Renunță</button>
+        <button class="btn btn-primary" onclick="submitTrade()" data-i18n="sendTrade">Trimite propunerea</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DATE CONTACT -->
+  <div id="contactModal" class="custom-backdrop">
+    <div class="custom-dialog" style="max-width: 400px;">
+      <div style="border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between;">
+        <h4 style="margin: 0; font-weight: bold;" data-i18n="contactHeader">Date de contact</h4>
+        <button type="button" class="close" onclick="closeModal('contactModal')">&times;</button>
+      </div>
+      <div class="alert alert-success" id="contactInfoArea"></div>
+      <button class="btn btn-default btn-block" onclick="closeModal('contactModal')" data-i18n="close">Închide</button>
+    </div>
+  </div>
+
+  <!-- MODAL ADAUGA CARTE -->
+  <div id="addBookModal" class="custom-backdrop">
+    <div class="custom-dialog">
+      <div style="border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between;">
+        <h4 style="margin: 0; font-weight: bold;" data-i18n="addBook">Adaugă o carte</h4>
+        <button type="button" class="close" onclick="closeModal('addBookModal')">&times;</button>
+      </div>
+      <form onsubmit="handlePostBook(event)">
         <div class="form-group">
-          <label for="modal-offered-select">Cartea pe care o oferi la schimb *</label>
-          <select id="modal-offered-select" required></select>
+          <label>Titlu *</label>
+          <input type="text" id="addTitle" class="form-control input-sm" required>
         </div>
         <div class="form-group">
-          <label for="modal-contact">Date de contact (Telefon / Email) *</label>
-          <input type="text" id="modal-contact" required placeholder="ex. 07xxxxxxxx sau email@exemplu.ro">
+          <label>Autor *</label>
+          <input type="text" id="addAuthor" class="form-control input-sm" required>
+        </div>
+        <div class="row">
+          <div class="col-xs-6 form-group">
+            <label>Gen</label>
+            <select id="addGenre" class="form-control input-sm">
+              <option value="Ficțiune">Ficțiune</option>
+              <option value="SF & Fantasy">SF & Fantasy</option>
+              <option value="Dezvoltare Personală">Dezvoltare Personală</option>
+              <option value="Istorie & Biografie">Istorie & Biografie</option>
+              <option value="Thriller & Mister">Thriller & Mister</option>
+              <option value="Tehnic & Știință">Tehnic & Știință</option>
+            </select>
+          </div>
+          <div class="col-xs-6 form-group">
+            <label>Stare</label>
+            <select id="addCond" class="form-control input-sm">
+              <option value="Nouă">Nouă</option>
+              <option value="Ca nouă">Ca nouă</option>
+              <option value="Foarte bună" selected>Foarte bună</option>
+              <option value="Bună">Bună</option>
+              <option value="Uzată">Uzată</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-xs-6 form-group">
+            <label>Format</label>
+            <select id="addIsSeries" class="form-control input-sm">
+              <option value="false">Volum unic</option>
+              <option value="true">Serie / Pachet</option>
+            </select>
+          </div>
+          <div class="col-xs-6 form-group">
+            <label>Detalii volum</label>
+            <input type="text" id="addVolInfo" class="form-control input-sm" value="Volum unic">
+          </div>
         </div>
         <div class="form-group">
-          <label for="modal-notes">Mesaj opțional</label>
-          <input type="text" id="modal-notes" placeholder="ex. Predare personală în Copou.">
+          <label>Oraș *</label>
+          <input type="text" id="addCity" class="form-control input-sm" value="Iași" required>
         </div>
-        <div class="modal-buttons">
-          <button type="button" class="btn btn-secondary" id="modal-cancel-btn">Anulează</button>
-          <button type="submit" class="btn btn-primary" id="modal-submit-btn">Trimite Cererea</button>
+        <div class="form-group">
+          <label>URL Imagine (opțional)</label>
+          <input type="url" id="addCover" class="form-control input-sm">
+        </div>
+        <div class="text-right">
+          <button type="button" class="btn btn-default" onclick="closeModal('addBookModal')">Anulare</button>
+          <button type="submit" class="btn btn-success">Salvează pe raft</button>
         </div>
       </form>
     </div>
   </div>
 
-  <script src="/app.js"></script>
+  <!-- MODAL LOGIN -->
+  <div id="loginModal" class="custom-backdrop">
+    <div class="custom-dialog" style="max-width: 340px;">
+      <div style="border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between;">
+        <h4 style="margin: 0; font-weight: bold;" data-i18n="login">Autentificare</h4>
+        <button type="button" class="close" onclick="closeModal('loginModal')">&times;</button>
+      </div>
+      <form onsubmit="handleLoginSubmit(event)">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="loginMail" class="form-control input-sm" required>
+        </div>
+        <div class="form-group">
+          <label data-i18n="pass">Parolă</label>
+          <input type="password" id="loginPwd" class="form-control input-sm" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top: 15px;" data-i18n="login">Intră în cont</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL REGISTER -->
+  <div id="registerModal" class="custom-backdrop">
+    <div class="custom-dialog" style="max-width: 360px;">
+      <div style="border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between;">
+        <h4 style="margin: 0; font-weight: bold;" data-i18n="register">Înregistrare</h4>
+        <button type="button" class="close" onclick="closeModal('registerModal')">&times;</button>
+      </div>
+      <form onsubmit="handleRegSubmit(event)">
+        <div class="form-group">
+          <label data-i18n="user">Nume utilizator</label>
+          <input type="text" id="regUName" class="form-control input-sm" required>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="regEmail" class="form-control input-sm" required>
+        </div>
+        <div class="form-group">
+          <label data-i18n="contactLbl">Telefon / Telegram</label>
+          <input type="text" id="regContact" class="form-control input-sm" placeholder="07xx xxx xxx">
+        </div>
+        <div class="form-group">
+          <label data-i18n="city">Oraș</label>
+          <input type="text" id="regCity" class="form-control input-sm" value="Iași" required>
+        </div>
+        <div class="form-group">
+          <label data-i18n="pass">Parolă</label>
+          <input type="password" id="regPwd" minlength="12" maxlength="72" class="form-control input-sm" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top: 15px;" data-i18n="register">Creează cont</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>

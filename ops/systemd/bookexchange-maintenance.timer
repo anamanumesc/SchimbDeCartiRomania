@@ -1,0 +1,8 @@
+[Unit]
+Description=Weekly Docker cache cleanup
+[Timer]
+OnCalendar=Sun *-*-* 04:00:00 Europe/Bucharest
+Persistent=true
+RandomizedDelaySec=15m
+[Install]
+WantedBy=timers.target

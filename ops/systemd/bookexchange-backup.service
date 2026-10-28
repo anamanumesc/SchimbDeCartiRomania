@@ -1,0 +1,15 @@
+[Unit]
+Description=Encrypted verified off-site BookExchange backup
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=manumescana
+Environment=OPS_ENV_FILE=/etc/bookexchange/backup.env
+ExecStart=/home/manumescana/SchimbDeCartiRomania/scripts/backup_db.sh
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+TimeoutStartSec=30min

@@ -1,0 +1,7 @@
+[Unit]
+Description=Check BookExchange health every three minutes
+[Timer]
+OnBootSec=2m
+OnUnitActiveSec=3m
+[Install]
+WantedBy=timers.target

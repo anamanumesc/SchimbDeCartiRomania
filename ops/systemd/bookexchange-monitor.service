@@ -1,0 +1,11 @@
+[Unit]
+Description=BookExchange application and disk health probe
+After=network-online.target
+[Service]
+Type=oneshot
+User=manumescana
+EnvironmentFile=/etc/bookexchange/monitor.env
+ExecStart=/usr/bin/python3 /home/manumescana/SchimbDeCartiRomania/scripts/check_health.py
+NoNewPrivileges=true
+PrivateTmp=true
+TimeoutStartSec=30s

@@ -1,0 +1,24 @@
+name: External uptime check
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [ops/public-url.txt, .github/workflows/uptime.yml]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check public application health
+        env:
+          HEALTH_URL: ${{ vars.PUBLIC_HEALTH_URL }}
+        run: |
+          HEALTH_URL="${HEALTH_URL:-$(cat ops/public-url.txt)}"
+          curl --fail --silent --show-error --retry 2 --max-time 15 "$HEALTH_URL" | python3 -c 'import json,sys; assert json.load(sys.stdin)["status"] == "healthy"'

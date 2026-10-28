@@ -1,0 +1,8 @@
+[Unit]
+Description=Daily BookExchange backup at 02:00 Europe/Bucharest
+[Timer]
+OnCalendar=*-*-* 02:00:00 Europe/Bucharest
+Persistent=true
+RandomizedDelaySec=5m
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,15 @@
+# Disposable recovery rehearsal only. No production volumes or published ports.
+name: bookexchange-dr-validation
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: bookuser
+      POSTGRES_PASSWORD: recovery-validation-only
+      POSTGRES_DB: bookexchange_db
+    tmpfs: [/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U bookuser -d bookexchange_db']
+      interval: 2s
+      timeout: 2s
+      retries: 30

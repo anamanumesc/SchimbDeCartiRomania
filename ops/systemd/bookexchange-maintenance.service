@@ -1,0 +1,8 @@
+[Unit]
+Description=BookExchange Docker cache maintenance
+After=docker.service
+[Service]
+Type=oneshot
+User=manumescana
+ExecStart=/home/manumescana/SchimbDeCartiRomania/scripts/maintenance.sh
+TimeoutStartSec=15min
